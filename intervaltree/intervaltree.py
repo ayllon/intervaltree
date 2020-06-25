@@ -619,7 +619,7 @@ class IntervalTree(MutableSet):
             if begin < bound < end
         )
 
-    def split_overlaps(self):
+    def split_overlaps(self, data_splitter=None):
         """
         Finds all intervals with overlapping ranges and splits them
         along the range boundaries.
@@ -627,6 +627,9 @@ class IntervalTree(MutableSet):
         Completes in worst-case O(n^2*log n) time (many interval
         boundaries are inside many intervals), best-case O(n*log n)
         time (small number of overlaps << n per interval).
+
+        If data_splitter is set to a function, split the data fields of the Interval:
+        data_splitter(data, lower_bound, upper_bound)
         """
         if not self:
             return
@@ -638,7 +641,8 @@ class IntervalTree(MutableSet):
         new_ivs = set()
         for lbound, ubound in zip(bounds[:-1], bounds[1:]):
             for iv in self[lbound]:
-                new_ivs.add(Interval(lbound, ubound, iv.data))
+                new_data = iv.data if data_splitter is None else data_splitter(iv.data, lbound, ubound)
+                new_ivs.add(Interval(lbound, ubound, new_data))
 
         self.__init__(new_ivs)
 
